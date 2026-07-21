@@ -1,0 +1,36 @@
+{
+  "name": "ambient-relay",
+  "version": "1.0.0",
+  "description": "A local Discord automation lab with deterministic replay, explicit live gates, and body-free receipts.",
+  "type": "module",
+  "main": "src/cli.js",
+  "bin": {
+    "ambient-relay": "src/cli.js"
+  },
+  "scripts": {
+    "start": "node src/cli.js replay",
+    "demo": "node src/cli.js replay",
+    "demo:json": "node src/cli.js replay --json",
+    "live": "node src/cli.js live",
+    "test": "node --test",
+    "syntax": "node scripts/check-syntax.js",
+    "artifact": "node scripts/generate-artifact.js",
+    "artifact:check": "node scripts/generate-artifact.js --check",
+    "check": "npm run syntax && npm test && npm run artifact:check && npm run security:scan",
+    "security:scan": "bash scripts/scan-secrets.sh"
+  },
+  "keywords": [
+    "discord",
+    "automation",
+    "dry-run",
+    "event-replay",
+    "policy"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "optionalDependencies": {
+    "discord.js": "14.27.0"
+  }
+}

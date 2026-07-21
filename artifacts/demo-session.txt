@@ -1,0 +1,47 @@
+╭──────────────────────────────────────────────────────────────────────────╮
+│ AMBIENT RELAY  /  LOCAL DISCORD AUTOMATION LAB                           │
+│ MODE synthetic  ·  NETWORK none  ·  OUTBOUND disabled                    │
+╰──────────────────────────────────────────────────────────────────────────╯
+
+┌─ EVENT evt-build-01
+│ policy   allowed.route-evaluation
+│ route    station.builder
+│ draft    I would isolate the failing boundary, reproduce it with the
+│          smallest fixture, then add a regression check before changing
+│          behavior.
+│ receipt  relay_ebf228cda1e1abb9  /  drafted
+│ event    d902966f5b3f…882f6a4e
+│ outbound NOT SENT  /  dry-run.synthetic-default
+└───────────────────────────────────────────────────────────────────────────
+
+┌─ EVENT evt-bot-02
+│ policy   blocked.bot-author
+│ route    no draft
+│ receipt  relay_492647e9c649da0d  /  blocked
+│ event    6fb65da0960f…83899d03
+│ outbound NOT SENT  /  delivery.not-requested
+└───────────────────────────────────────────────────────────────────────────
+
+┌─ EVENT evt-care-03
+│ policy   allowed.route-evaluation
+│ route    station.care
+│ draft    That sounds heavy. Name the smallest part you want witnessed
+│          or untangled, and we can stay with that.
+│ receipt  relay_c2b66692c7e6aced  /  drafted
+│ event    b6086169e1cb…112efc96
+│ outbound NOT SENT  /  dry-run.synthetic-default
+└───────────────────────────────────────────────────────────────────────────
+
+┌─ EVENT evt-quiet-04
+│ policy   allowed.route-evaluation
+│ route    no draft
+│ receipt  relay_8fdd61f4da7e24f6  /  observed
+│ event    427a8e90f0ec…cd302e97
+│ outbound NOT SENT  /  delivery.not-requested
+└───────────────────────────────────────────────────────────────────────────
+
+REPLAY RECEIPT
+fixture relay-room-2026-07@1.0.0
+events 4  ·  drafted 2  ·  blocked 1  ·  observed 1
+network 0  ·  outbound 0
+proof: synthetic fixture only; no Discord session or AI provider was contacted.

@@ -1,0 +1,46 @@
+{
+  "fixtureId": "relay-room-2026-07",
+  "fixtureVersion": "1.0.0",
+  "events": [
+    {
+      "eventId": "evt-build-01",
+      "guildId": "lab-guild",
+      "channelId": "lab-build",
+      "timestamp": "2026-07-21T18:00:00.000Z",
+      "directMessage": false,
+      "mentioned": false,
+      "content": "The deploy script fails after the database check. How should we isolate the bug?",
+      "author": { "id": "person-alex", "bot": false }
+    },
+    {
+      "eventId": "evt-bot-02",
+      "guildId": "lab-guild",
+      "channelId": "lab-build",
+      "timestamp": "2026-07-21T18:02:00.000Z",
+      "directMessage": false,
+      "mentioned": false,
+      "content": "Automated status message from another bot.",
+      "author": { "id": "bot-status", "bot": true }
+    },
+    {
+      "eventId": "evt-care-03",
+      "guildId": "lab-guild",
+      "channelId": "lab-build",
+      "timestamp": "2026-07-21T18:04:00.000Z",
+      "directMessage": false,
+      "mentioned": false,
+      "content": "I feel overwhelmed and stuck trying to finish this project.",
+      "author": { "id": "person-rin", "bot": false }
+    },
+    {
+      "eventId": "evt-quiet-04",
+      "guildId": "lab-guild",
+      "channelId": "lab-build",
+      "timestamp": "2026-07-21T18:06:00.000Z",
+      "directMessage": false,
+      "mentioned": false,
+      "content": "Morning everyone.",
+      "author": { "id": "person-sam", "bot": false }
+    }
+  ]
+}

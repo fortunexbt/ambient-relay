@@ -104,7 +104,7 @@ function recompute() {
     ...BASE,
     cooldownMs: state.policy.cooldownMs,
     allowedChannelId: state.policy.allowedChannelId,
-    humanReviewStations: Object.freeze(STATIONS.map((s) => s.id).filter((id) => state.policy.humanReviewStations.includes(id))),
+    humanReviewStations: Object.freeze([...state.policy.humanReviewStations]),
   });
   state.outcomes = replay(config);
 }
@@ -245,11 +245,11 @@ function scrollToCurrent(instant = reducedMotion.matches) {
   const stream = messages.parentElement!;
   const current = messages.querySelector<HTMLElement>('.msg.current');
   if (!current) return;
-  const top = current.offsetTop - stream.offsetTop;
-  const bottom = top + current.offsetHeight;
-  if (top < stream.scrollTop || bottom > stream.scrollTop + stream.clientHeight) {
-    stream.scrollTo({ top: Math.max(0, bottom - stream.clientHeight + 16), behavior: instant ? 'auto' : 'smooth' });
-  }
+  const view = stream.getBoundingClientRect();
+  const item = current.getBoundingClientRect();
+  const top = view.top + $<HTMLElement>('.stream-head').offsetHeight;
+  const delta = item.bottom > view.bottom ? Math.min(item.bottom - view.bottom + 16, item.top - top) : item.top < top ? item.top - top : 0;
+  if (delta) stream.scrollBy({ top: delta, behavior: instant ? 'auto' : 'smooth' });
 }
 
 function renderDecision() {
@@ -341,7 +341,7 @@ function buildPolicies() {
     const set = new Set(state.policy.humanReviewStations);
     if (input.checked) set.add(input.value);
     else set.delete(input.value);
-    state.policy.humanReviewStations = [...set];
+    state.policy.humanReviewStations = STATIONS.map((s) => s.id).filter((id) => set.has(id));
     update();
   });
 
@@ -365,11 +365,19 @@ function buildPolicies() {
     }
     update();
     scrollToCurrent();
-    if (narrow.matches) $('.channel').scrollIntoView({ block: 'start', behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+    if ($('.channel').getBoundingClientRect().bottom > innerHeight) {
+      $(narrow.matches ? '.channel' : '.timeline').scrollIntoView({ block: 'start', behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+    }
   });
 }
 
 function renderPolicies() {
+  const current = JSON.stringify(state.policy);
+  SCENARIOS.forEach((scenario, n) => {
+    const pressed = JSON.stringify({ ...DEFAULT_POLICY, ...scenario.policy }) === current;
+    $(`[data-scenario="${n}"]`).setAttribute('aria-pressed', String(pressed));
+  });
+
   document.querySelectorAll<HTMLInputElement>('input[name="cooldown"]').forEach((i) => { i.checked = Number(i.value) === state.policy.cooldownMs; });
   document.querySelectorAll<HTMLInputElement>('input[name="channel"]').forEach((i) => { i.checked = i.value === state.policy.allowedChannelId; });
   document.querySelectorAll<HTMLInputElement>('[data-policy="review"] input').forEach((i) => { i.checked = state.policy.humanReviewStations.includes(i.value); });

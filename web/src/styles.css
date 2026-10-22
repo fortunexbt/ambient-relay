@@ -188,6 +188,11 @@ h1 {
   transition: background-color 160ms ease, color 160ms ease, transform 160ms var(--ease-out);
 }
 
+.chip[aria-pressed='true'] {
+  background: var(--ink);
+  color: var(--paper);
+}
+
 .chip:active {
   transform: scale(0.97);
 }
@@ -225,10 +230,12 @@ h1 {
 
 .timeline {
   grid-area: timeline;
+  scroll-margin-top: 0.75rem;
 }
 
 .channel {
   grid-area: channel;
+  scroll-margin-top: 0.75rem;
 }
 
 .decision {
@@ -1011,22 +1018,28 @@ h1 {
 
 .tally {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.5rem;
+  gap: 0.25rem;
   padding-top: 1rem;
   border-top: 1px solid var(--rule);
 }
 
+.tally div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 .tally dt {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   color: var(--ink-2);
 }
 
 .tally dd {
   display: flex;
   align-items: baseline;
-  gap: 0.3rem;
-  font-size: 1.5rem;
+  gap: 0.4rem;
+  font-size: 1.25rem;
   font-weight: 500;
 }
 
@@ -1043,9 +1056,10 @@ h1 {
 }
 
 .delta {
+  order: -1;
   font-family: var(--mono);
   font-size: 0.8125rem;
-  color: var(--ink);
+  color: var(--ink-2);
 }
 
 /* Footer */

@@ -22,10 +22,18 @@ const STATIONS = Object.freeze([
   }),
 ]);
 
+// Keywords match whole words, with an optional plural or verb ending, so 'test'
+// matches 'tests' and 'testing' but not 'latest'. '?' matches anywhere.
+const WORD = /[\p{L}\p{N}]+/gu;
+const ENDING = /^(?:s|es|ed|d|ing)?$/;
+
 export function scoreStations(event) {
-  const lowered = event.content.toLowerCase();
+  const words = event.content.toLowerCase().match(WORD) ?? [];
+  const matchesKeyword = (keyword) => (keyword === '?'
+    ? event.content.includes('?')
+    : words.some((word) => word.startsWith(keyword) && ENDING.test(word.slice(keyword.length))));
   return STATIONS.map((station, index) => {
-    const matches = station.keywords.filter((keyword) => lowered.includes(keyword));
+    const matches = station.keywords.filter(matchesKeyword);
     const mentionBoost = station.id === 'guide' && event.mentioned ? 1 : 0;
     return Object.freeze({
       stationId: station.id,

@@ -10,7 +10,7 @@ Expected footer:
 
 ```text
 events 13  ·  drafted 3  ·  needs-human 2  ·  blocked 6  ·  observed 2
-network 0  ·  outbound 0
+outbound 0
 ```
 
 No install or environment configuration is required. If the counts or checked-in receipt IDs change, review the fixture, policy, station templates, and artifact diff together.
@@ -23,7 +23,7 @@ npm run check
 npm audit --audit-level=high
 ```
 
-`npm run check` performs syntax checks, 18 focused tests, deterministic artifact comparison, a high-signal credential/placeholder scan and a type-checked build of the browser lab.
+`npm run check` performs syntax checks, 22 focused tests, deterministic artifact comparison, a high-signal credential/placeholder scan and a type-checked build of the browser lab.
 
 ## Experimental mode: Discord observe
 
@@ -38,7 +38,7 @@ Before starting:
 - provide the token plus exact guild and channel IDs without storing them in the repository;
 - confirm stdout is not redirected to an insecure or long-lived destination.
 
-Then run `npm run live`. Expect a `discord.connected` JSON record followed by reduced receipt records. Stop with `Ctrl-C`.
+Then run `npm run live`. Expect a `discord.connected` JSON record followed by reduced receipt records. A `needs-human` record also carries `reviewUrl`, the Discord link to the held message. Stop with `Ctrl-C`.
 
 ## Experimental mode: Discord send
 

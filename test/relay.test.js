@@ -13,7 +13,6 @@ describe('synthetic replay', () => {
     const second = await runSyntheticReplay();
 
     assert.deepEqual(first, second);
-    assert.equal(first.networkRequests, 0);
     assert.equal(first.outboundMessages, 0);
     assert.deepEqual(first.outcomes.map((outcome) => outcome.receipt.status), [
       'drafted', 'blocked', 'blocked', 'needs-human', 'observed', 'blocked', 'blocked',
@@ -77,6 +76,20 @@ describe('synthetic replay', () => {
 
     assert.deepEqual([winner.stationId, winner.score, winner.matches], ['builder', 1, ['build']]);
     assert.deepEqual([runnerUp.stationId, runnerUp.score, runnerUp.matches], ['care', 1, ['worried']]);
+  });
+
+  test('matches keywords as whole words, not substrings', () => {
+    const score = (content) => Object.fromEntries(
+      scoreStations({ content, mentioned: false }).map((s) => [s.stationId, s.matches]),
+    );
+
+    assert.deepEqual(score('Read the latest release notes').builder, []);
+    assert.deepEqual(score('The capital letters are showing').builder, []);
+    assert.deepEqual(score('However it is, whatever').guide, []);
+    assert.deepEqual(score('Two tests failed while testing the deployed build').builder, ['build', 'deploy', 'test']);
+    assert.deepEqual(score("What's the server error?").builder, ['error', 'server']);
+    assert.deepEqual(score("What's the server error?").guide, ['?', 'what']);
+    assert.deepEqual(score('Feeling stuck').care, ['feel', 'stuck']);
   });
 
   test('rejects malformed and oversized events before routing', () => {

@@ -122,5 +122,5 @@
 REPLAY RECEIPT
 fixture relay-room-2026-07@2.0.0
 events 13  ·  drafted 3  ·  needs-human 2  ·  blocked 6  ·  observed 2
-network 0  ·  outbound 0
+outbound 0
 proof: synthetic fixture only; no Discord session or AI provider was contacted.

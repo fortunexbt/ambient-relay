@@ -13,8 +13,7 @@ export function replayFixture(fixture, config) {
     fixtureId: fixture.fixtureId,
     fixtureVersion: fixture.fixtureVersion,
     mode: config.mode,
-    networkRequests: 0,
-    outboundMessages: 0,
+    outboundMessages: outcomes.filter((outcome) => outcome.receipt.outboundPerformed).length,
     outcomes: Object.freeze(outcomes),
   });
 }

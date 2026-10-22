@@ -54,7 +54,7 @@ export async function startDiscordRelay(config, logger = createSafeLogger()) {
           });
         }
       }
-      logger.receipt(outcome.receipt);
+      logger.receipt(outcome.receipt, outcome.receipt.status === 'needs-human' ? reviewUrl(message) : null);
     } catch (error) {
       logger.error('discord.event-rejected', { type: safeErrorType(error) });
     }
@@ -92,6 +92,11 @@ export function toRelayEvent(message, botUser) {
   };
 }
 
+// A held draft is useless to the reviewer unless they can find the message it answers.
+export function reviewUrl(message) {
+  return `https://discord.com/channels/${message.guildId}/${message.channelId}/${message.id}`;
+}
+
 export function buildDeliveryPayload(draft) {
   return Object.freeze({
     content: `**[${draft.stationLabel}]** ${draft.content}`,
@@ -115,7 +120,7 @@ export function createSafeLogger(output = process.stdout) {
         ...(typeof fields.type === 'string' ? { type: fields.type } : {}),
       })}\n`);
     },
-    receipt(receipt) {
+    receipt(receipt, link = null) {
       output.write(`${JSON.stringify({
         level: 'receipt',
         receiptId: receipt.receiptId,
@@ -129,6 +134,7 @@ export function createSafeLogger(output = process.stdout) {
         outboundPerformed: receipt.outboundPerformed,
         eventFingerprint: receipt.eventFingerprint,
         draftFingerprint: receipt.draftFingerprint,
+        ...(typeof link === 'string' ? { reviewUrl: link } : {}),
       })}\n`);
     },
   });

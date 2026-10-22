@@ -5,6 +5,7 @@ import {
   buildDeliveryPayload,
   createSafeLogger,
   isDeliverable,
+  reviewUrl,
   toRelayEvent,
 } from '../src/live/discord-adapter.js';
 
@@ -53,5 +54,18 @@ describe('Discord adapter pure boundary', () => {
 
     assert.match(output, /"level":"receipt"/);
     assert.doesNotMatch(output, /content|token|username/i);
+    assert.doesNotMatch(output, /reviewUrl/);
+  });
+
+  test('held receipts carry a link to the message, not its text', () => {
+    let output = '';
+    const logger = createSafeLogger({ write: (chunk) => { output += chunk; } });
+    const message = { id: '323456789012345679', guildId: '123456789012345678', channelId: '223456789012345678' };
+    logger.receipt({ receiptId: 'relay_test', status: 'needs-human' }, reviewUrl(message));
+
+    assert.equal(
+      JSON.parse(output).reviewUrl,
+      'https://discord.com/channels/123456789012345678/223456789012345678/323456789012345679',
+    );
   });
 });

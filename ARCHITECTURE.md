@@ -20,11 +20,11 @@ Ambient Relay is split at the network boundary. The replay engine is pure Node.j
 | --- | --- |
 | `event.js` | Validate a bounded Discord-shaped envelope and discard unused fields |
 | `policy.js` | Fail closed on bots, DMs, non-allowlisted locations, unknown modes, and cooldown |
-| `stations.js` | Score every station by keyword matches and select one fixed local response template |
+| `stations.js` | Score every station by whole-word keyword matches and select one fixed local response template |
 | `relay-engine.js` | Order normalization → policy → route → delivery state (or human-review hold) → receipt |
 | `session.js` | Replay a fixture through one engine; shared by the CLI and the browser demo |
 | `receipt.js` | Reduce events and drafts to SHA-256 fingerprints and enumerated metadata |
-| `replay.js` | Load only the packaged fixture and report zero network/outbound operations |
+| `replay.js` | Load only the packaged fixture. The outbound count comes from the receipts |
 | `discord-adapter.js` | Map allowlisted Discord events and optionally deliver one reply |
 | `terminal.js` | Render an inspectable proof from the same outcomes used by tests |
 
@@ -43,7 +43,7 @@ SHA-256 is used for deterministic correlation, not anonymization or attestation.
 3. The client subscribes only to Guilds, Guild Messages, and Message Content intents.
 4. Events outside the exact guild/channel pair are dropped before routing.
 5. The core gate and deterministic router run.
-6. Observe mode emits only a receipt. Held (`needs-human`) drafts emit only a receipt. Send mode emits one fixed-template reply for a `drafted` receipt with all allowed mentions disabled.
+6. Observe mode emits only a receipt. Held (`needs-human`) drafts emit only a receipt plus a `reviewUrl` link to the Discord message, so a person can find it. Send mode emits one fixed-template reply for a `drafted` receipt with all allowed mentions disabled.
 7. Success or failure revises the receipt using stable delivery codes. Raw provider errors are discarded.
 
 The live path has unit coverage at its pure boundaries but no live-account end-to-end test. It should remain labelled experimental until a disposable test guild verifies login, permissions, observe behavior, send acknowledgement, Discord rate-limit handling, and graceful shutdown.

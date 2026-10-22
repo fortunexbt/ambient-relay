@@ -83,9 +83,9 @@ flowchart LR
     X -->|explicit send| S[One allowlisted Discord channel]
 ```
 
-Technical terms route to Builder, emotional language routes to Care, and questions or direct mentions route to Guide. Ties use a fixed station order. User content is used in memory for routing and hashing but is never interpolated into a reply.
+Technical terms route to Builder, emotional language routes to Care, and questions or direct mentions route to Guide. Keywords match whole words with an optional plural or verb ending, so "test" matches "testing" but not "latest". Ties use a fixed station order. User content is used in memory for routing and hashing but is never interpolated into a reply.
 
-Care is a fixed acknowledgement template, not a mental-health, moderation, or crisis-response system. Its drafts are held for human review by default (`needs-human` receipts) and are never delivered, even in send mode. Do not use the experimental live adapter as a substitute for trained human support or an established escalation path.
+Care is a fixed acknowledgement template, not a mental-health, moderation, or crisis-response system. Its drafts are held for human review by default (`needs-human` receipts, which in live mode carry a link to the Discord message) and are never delivered, even in send mode. Do not use the experimental live adapter as a substitute for trained human support or an established escalation path.
 
 ## Live boundary
 

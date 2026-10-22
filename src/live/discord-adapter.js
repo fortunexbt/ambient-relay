@@ -38,7 +38,7 @@ export async function startDiscordRelay(config, logger = createSafeLogger()) {
     if (message.guildId !== config.allowedGuildId || message.channelId !== config.allowedChannelId) return;
     try {
       let outcome = engine.route(toRelayEvent(message, client.user));
-      if (outcome.draft && config.outboundEnabled) {
+      if (isDeliverable(outcome, config)) {
         try {
           await message.reply(buildDeliveryPayload(outcome.draft));
           outcome = engine.finalizeDelivery(outcome, {
@@ -70,6 +70,10 @@ export async function startDiscordRelay(config, logger = createSafeLogger()) {
   }
 
   return client;
+}
+
+export function isDeliverable(outcome, config) {
+  return config.outboundEnabled && outcome.receipt.status === 'drafted';
 }
 
 export function toRelayEvent(message, botUser) {

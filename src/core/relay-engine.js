@@ -20,13 +20,13 @@ export class RelayEngine {
       this.#lastDraftByChannel.set(event.channelId, Date.parse(event.timestamp));
     }
 
-    const delivery = initialDelivery(this.config.mode, Boolean(draft));
+    const delivery = initialDelivery(this.config, draft);
     const receipt = createReceipt({ event, config: this.config, policy, draft, delivery });
     const trace = Object.freeze([
       stage('normalize', 'complete', 'event.valid'),
       stage('policy', policy.allowed ? 'complete' : 'held', policy.code),
       stage('route', draft ? 'complete' : 'quiet', draft ? `station.${draft.stationId}` : 'route.no-draft'),
-      stage('delivery', delivery.performed ? 'complete' : 'dry-run', delivery.code),
+      stage('delivery', delivery.performed ? 'complete' : delivery.held ? 'held' : 'dry-run', delivery.code),
       stage('receipt', 'complete', 'receipt.body-free'),
     ]);
 
@@ -46,11 +46,16 @@ export class RelayEngine {
   }
 }
 
-function initialDelivery(mode, hasDraft) {
-  if (!hasDraft) return Object.freeze({ performed: false, failed: false, code: 'delivery.not-requested' });
-  if (mode === 'discord-send') return Object.freeze({ performed: false, failed: false, code: 'delivery.awaiting-explicit-send' });
-  if (mode === 'discord-observe') return Object.freeze({ performed: false, failed: false, code: 'observe.no-send' });
-  return Object.freeze({ performed: false, failed: false, code: 'dry-run.synthetic-default' });
+function initialDelivery(config, draft) {
+  if (!draft) return delivery('delivery.not-requested');
+  if (config.humanReviewStations.includes(draft.stationId)) return delivery('held.human-review', true);
+  if (config.mode === 'discord-send') return delivery('delivery.awaiting-explicit-send');
+  if (config.mode === 'discord-observe') return delivery('observe.no-send');
+  return delivery('dry-run.synthetic-default');
+}
+
+function delivery(code, held = false) {
+  return Object.freeze({ performed: false, failed: false, held, code });
 }
 
 function stage(stageName, status, code) {

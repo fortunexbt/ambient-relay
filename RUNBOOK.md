@@ -9,7 +9,7 @@ npm start
 Expected footer:
 
 ```text
-events 4  ·  drafted 2  ·  blocked 1  ·  observed 1
+events 13  ·  drafted 3  ·  needs-human 2  ·  blocked 6  ·  observed 2
 network 0  ·  outbound 0
 ```
 

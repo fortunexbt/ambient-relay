@@ -1171,6 +1171,15 @@ h1 {
     font-size: 1rem;
   }
 
+  .try {
+    gap: 0.375rem;
+  }
+
+  .chip {
+    font-size: 0.875rem;
+    padding-inline: 0.75rem;
+  }
+
   .msg {
     padding-inline: 0.875rem;
   }

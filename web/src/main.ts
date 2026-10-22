@@ -40,10 +40,11 @@ const COOLDOWNS = [
   { label: '60 s', value: 60_000 },
   { label: '5 min', value: 300_000 },
 ];
-const SCENARIOS: { label: string; policy: Partial<Policy>; eventId: string }[] = [
-  { label: 'Turn the cooldown off', policy: { cooldownMs: 0 }, eventId: 'evt-03-same-error' },
-  { label: 'Allowlist #lab-random', policy: { allowedChannelId: 'lab-random' }, eventId: 'evt-07-slides' },
-  { label: 'Let Care drafts through', policy: { humanReviewStations: [] }, eventId: 'evt-04-overwhelmed' },
+// Indexed by the data-scenario buttons in index.html.
+const SCENARIOS: { policy: Partial<Policy>; eventId: string }[] = [
+  { policy: { cooldownMs: 0 }, eventId: 'evt-03-same-error' },
+  { policy: { allowedChannelId: 'lab-random' }, eventId: 'evt-07-slides' },
+  { policy: { humanReviewStations: [] }, eventId: 'evt-04-overwhelmed' },
 ];
 const VERDICT_LABEL: Record<Verdict, string> = {
   reply: 'Would reply',
@@ -347,10 +348,6 @@ function buildPolicies() {
   });
 
   const tryGroup = $<HTMLElement>('.try');
-  tryGroup.insertAdjacentHTML('beforeend', [
-    ...SCENARIOS.map((s, n) => `<button type="button" class="chip" data-scenario="${n}">${s.label}</button>`),
-    '<button type="button" class="chip chip-reset" data-scenario="reset">Reset</button>',
-  ].join(''));
   tryGroup.addEventListener('click', (e) => {
     const button = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-scenario]');
     if (!button) return;

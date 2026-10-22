@@ -23,7 +23,7 @@ npm run check
 npm audit --audit-level=high
 ```
 
-`npm run check` performs syntax checks, 14 focused tests, deterministic artifact comparison, and a high-signal credential/placeholder scan.
+`npm run check` performs syntax checks, 18 focused tests, deterministic artifact comparison, a high-signal credential/placeholder scan and a type-checked build of the browser lab.
 
 ## Experimental mode: Discord observe
 

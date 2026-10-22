@@ -262,6 +262,7 @@ function renderDecision() {
   const before = baseline[i];
 
   decision.innerHTML = `
+    <h2 class="sr">Decision</h2>
     <header class="d-head">
       <p class="d-event mono">${escape(event.eventId)} · ${time(event)} · ${escape(channelLabel(event))}</p>
       <p class="stamp stamp-${verdict}">${VERDICT_LABEL[verdict]}</p>
@@ -434,6 +435,8 @@ buildRail();
 buildPolicies();
 update();
 scrollToCurrent(true);
+// Entrance transitions are for scrubbing, not for the first paint.
+requestAnimationFrame(() => requestAnimationFrame(() => document.documentElement.classList.add('ready')));
 
 scrub.addEventListener('input', () => {
   stop();

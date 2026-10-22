@@ -405,8 +405,8 @@ h1 {
   color: var(--chat-ink);
   border-radius: 12px;
   overflow: hidden;
-  height: min(44rem, calc(100dvh - 9rem));
-  min-height: 30rem;
+  /* Fit below the masthead on first view so the current message is never under the fold. */
+  height: clamp(28rem, calc(100dvh - 25rem), 44rem);
 }
 
 .channel ::selection {
@@ -511,7 +511,7 @@ h1 {
 }
 
 @starting-style {
-  .msg {
+  .ready .msg {
     opacity: 0;
     translate: 0 6px;
   }
@@ -640,7 +640,7 @@ h1 {
 }
 
 @starting-style {
-  .verdict > * {
+  .ready .verdict > * {
     opacity: 0;
     translate: 0 4px;
     filter: blur(3px);
@@ -1197,8 +1197,8 @@ h1 {
   }
 
   @starting-style {
-    .msg,
-    .verdict > * {
+    .ready .msg,
+    .ready .verdict > * {
       translate: none;
       filter: none;
     }

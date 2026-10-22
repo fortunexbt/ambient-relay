@@ -1,46 +1,175 @@
 {
   "fixtureId": "relay-room-2026-07",
-  "fixtureVersion": "1.0.0",
+  "fixtureVersion": "2.0.0",
   "events": [
     {
-      "eventId": "evt-build-01",
+      "eventId": "evt-01-deploy",
       "guildId": "lab-guild",
       "channelId": "lab-build",
       "timestamp": "2026-07-21T18:00:00.000Z",
       "directMessage": false,
       "mentioned": false,
       "content": "The deploy script fails after the database check. How should we isolate the bug?",
-      "author": { "id": "person-alex", "bot": false }
+      "author": {
+        "id": "person-alex",
+        "bot": false
+      }
     },
     {
-      "eventId": "evt-bot-02",
+      "eventId": "evt-02-status-bot",
+      "guildId": "lab-guild",
+      "channelId": "lab-build",
+      "timestamp": "2026-07-21T18:00:40.000Z",
+      "directMessage": false,
+      "mentioned": false,
+      "content": "Automated status message from another bot.",
+      "author": {
+        "id": "bot-status",
+        "bot": true
+      }
+    },
+    {
+      "eventId": "evt-03-same-error",
+      "guildId": "lab-guild",
+      "channelId": "lab-build",
+      "timestamp": "2026-07-21T18:00:50.000Z",
+      "directMessage": false,
+      "mentioned": false,
+      "content": "Same error on my branch, the test server times out.",
+      "author": {
+        "id": "person-jo",
+        "bot": false
+      }
+    },
+    {
+      "eventId": "evt-04-overwhelmed",
       "guildId": "lab-guild",
       "channelId": "lab-build",
       "timestamp": "2026-07-21T18:02:00.000Z",
       "directMessage": false,
       "mentioned": false,
-      "content": "Automated status message from another bot.",
-      "author": { "id": "bot-status", "bot": true }
+      "content": "I feel overwhelmed and stuck trying to finish this project.",
+      "author": {
+        "id": "person-rin",
+        "bot": false
+      }
     },
     {
-      "eventId": "evt-care-03",
+      "eventId": "evt-05-morning",
       "guildId": "lab-guild",
       "channelId": "lab-build",
-      "timestamp": "2026-07-21T18:04:00.000Z",
+      "timestamp": "2026-07-21T18:03:00.000Z",
       "directMessage": false,
       "mentioned": false,
-      "content": "I feel overwhelmed and stuck trying to finish this project.",
-      "author": { "id": "person-rin", "bot": false }
+      "content": "Morning everyone.",
+      "author": {
+        "id": "person-sam",
+        "bot": false
+      }
     },
     {
-      "eventId": "evt-quiet-04",
+      "eventId": "evt-06-dm",
+      "guildId": null,
+      "channelId": "dm-kit",
+      "timestamp": "2026-07-21T18:04:00.000Z",
+      "directMessage": true,
+      "mentioned": false,
+      "content": "Can you explain how the relay picks a reply?",
+      "author": {
+        "id": "person-kit",
+        "bot": false
+      }
+    },
+    {
+      "eventId": "evt-07-slides",
+      "guildId": "lab-guild",
+      "channelId": "lab-random",
+      "timestamp": "2026-07-21T18:05:00.000Z",
+      "directMessage": false,
+      "mentioned": false,
+      "content": "What time is the demo call? Need help with the slides.",
+      "author": {
+        "id": "person-mika",
+        "bot": false
+      }
+    },
+    {
+      "eventId": "evt-08-mention",
       "guildId": "lab-guild",
       "channelId": "lab-build",
       "timestamp": "2026-07-21T18:06:00.000Z",
       "directMessage": false,
+      "mentioned": true,
+      "content": "@relay where do receipts get stored?",
+      "author": {
+        "id": "person-noor",
+        "bot": false
+      }
+    },
+    {
+      "eventId": "evt-09-pushing",
+      "guildId": "lab-guild",
+      "channelId": "lab-build",
+      "timestamp": "2026-07-21T18:06:20.000Z",
+      "directMessage": false,
       "mentioned": false,
-      "content": "Morning everyone.",
-      "author": { "id": "person-sam", "bot": false }
+      "content": "Thanks, that worked. Pushing the fix to the server now.",
+      "author": {
+        "id": "person-alex",
+        "bot": false
+      }
+    },
+    {
+      "eventId": "evt-10-tie",
+      "guildId": "lab-guild",
+      "channelId": "lab-build",
+      "timestamp": "2026-07-21T18:08:00.000Z",
+      "directMessage": false,
+      "mentioned": false,
+      "content": "Worried the build broke again after my merge.",
+      "author": {
+        "id": "person-rin",
+        "bot": false
+      }
+    },
+    {
+      "eventId": "evt-11-deploy-bot",
+      "guildId": "lab-guild",
+      "channelId": "lab-random",
+      "timestamp": "2026-07-21T18:10:00.000Z",
+      "directMessage": false,
+      "mentioned": false,
+      "content": "Nightly deploy finished in 4m 12s.",
+      "author": {
+        "id": "bot-deploy",
+        "bot": true
+      }
+    },
+    {
+      "eventId": "evt-12-lol",
+      "guildId": "lab-guild",
+      "channelId": "lab-build",
+      "timestamp": "2026-07-21T18:11:00.000Z",
+      "directMessage": false,
+      "mentioned": false,
+      "content": "lol same",
+      "author": {
+        "id": "person-jo",
+        "bot": false
+      }
+    },
+    {
+      "eventId": "evt-13-exhausted",
+      "guildId": "lab-guild",
+      "channelId": "lab-build",
+      "timestamp": "2026-07-21T18:12:00.000Z",
+      "directMessage": false,
+      "mentioned": false,
+      "content": "So frustrated. Nothing I try works and I am exhausted.",
+      "author": {
+        "id": "person-sam",
+        "bot": false
+      }
     }
   ]
 }

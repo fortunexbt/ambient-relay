@@ -4,6 +4,7 @@ import { describe, test } from 'node:test';
 import {
   buildDeliveryPayload,
   createSafeLogger,
+  isDeliverable,
   toRelayEvent,
 } from '../src/live/discord-adapter.js';
 
@@ -16,6 +17,16 @@ describe('Discord adapter pure boundary', () => {
 
     assert.deepEqual(payload.allowedMentions, { parse: [], repliedUser: false });
     assert.equal(payload.content, '**[Builder station]** A deterministic draft.');
+  });
+
+  test('delivers only drafted receipts, never held or blocked ones', () => {
+    const send = { outboundEnabled: true };
+    const observe = { outboundEnabled: false };
+
+    assert.equal(isDeliverable({ receipt: { status: 'drafted' } }, send), true);
+    assert.equal(isDeliverable({ receipt: { status: 'drafted' } }, observe), false);
+    assert.equal(isDeliverable({ receipt: { status: 'needs-human' } }, send), false);
+    assert.equal(isDeliverable({ receipt: { status: 'blocked' } }, send), false);
   });
 
   test('maps only the event fields required by the relay engine', () => {

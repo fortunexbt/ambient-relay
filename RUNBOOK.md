@@ -9,7 +9,7 @@ npm start
 Expected footer:
 
 ```text
-events 4  ·  drafted 2  ·  blocked 1  ·  observed 1
+events 13  ·  drafted 3  ·  needs-human 2  ·  blocked 6  ·  observed 2
 network 0  ·  outbound 0
 ```
 
@@ -23,7 +23,7 @@ npm run check
 npm audit --audit-level=high
 ```
 
-`npm run check` performs syntax checks, 14 focused tests, deterministic artifact comparison, and a high-signal credential/placeholder scan.
+`npm run check` performs syntax checks, 18 focused tests, deterministic artifact comparison, a high-signal credential/placeholder scan and a type-checked build of the browser lab.
 
 ## Experimental mode: Discord observe
 

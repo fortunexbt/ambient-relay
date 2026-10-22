@@ -1,5 +1,6 @@
 const LIVE_MODES = new Set(['discord-observe', 'discord-send']);
 const SNOWFLAKE = /^\d{17,20}$/;
+const HUMAN_REVIEW_STATIONS = Object.freeze(['care']);
 
 export class RuntimeConfigurationError extends Error {
   constructor(code) {
@@ -15,6 +16,7 @@ export function createSyntheticConfig() {
     allowedGuildId: 'lab-guild',
     allowedChannelId: 'lab-build',
     cooldownMs: 60_000,
+    humanReviewStations: HUMAN_REVIEW_STATIONS,
     outboundEnabled: false,
   });
 }
@@ -43,6 +45,7 @@ export function createRuntimeConfig(environment = process.env) {
     allowedGuildId,
     allowedChannelId,
     cooldownMs: readCooldown(environment.AMBIENT_RELAY_COOLDOWN_MS),
+    humanReviewStations: HUMAN_REVIEW_STATIONS,
     outboundEnabled: mode === 'discord-send',
   };
   Object.defineProperty(config, 'discordToken', {

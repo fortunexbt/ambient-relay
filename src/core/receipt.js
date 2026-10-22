@@ -58,5 +58,6 @@ function statusFor(policy, draft, delivery) {
   if (!draft) return 'observed';
   if (delivery.performed) return 'sent';
   if (delivery.failed) return 'failed';
+  if (delivery.held) return 'needs-human';
   return 'drafted';
 }

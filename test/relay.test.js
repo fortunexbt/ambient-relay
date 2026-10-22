@@ -4,6 +4,7 @@ import { describe, test } from 'node:test';
 import { createSyntheticConfig } from '../src/config.js';
 import { EventValidationError } from '../src/core/event.js';
 import { RelayEngine } from '../src/core/relay-engine.js';
+import { scoreStations } from '../src/core/stations.js';
 import { runSyntheticReplay } from '../src/replay.js';
 
 describe('synthetic replay', () => {
@@ -14,11 +15,12 @@ describe('synthetic replay', () => {
     assert.deepEqual(first, second);
     assert.equal(first.networkRequests, 0);
     assert.equal(first.outboundMessages, 0);
-    assert.equal(first.outcomes.length, 4);
+    assert.deepEqual(first.outcomes.map((outcome) => outcome.receipt.status), [
+      'drafted', 'blocked', 'blocked', 'needs-human', 'observed', 'blocked', 'blocked',
+      'drafted', 'blocked', 'drafted', 'blocked', 'observed', 'needs-human',
+    ]);
     assert.equal(first.outcomes[0].draft.stationId, 'builder');
-    assert.equal(first.outcomes[1].receipt.status, 'blocked');
-    assert.equal(first.outcomes[2].draft.stationId, 'care');
-    assert.equal(first.outcomes[3].receipt.status, 'observed');
+    assert.equal(first.outcomes[3].draft.stationId, 'care');
     assert.ok(first.outcomes.every((outcome) => outcome.receipt.outboundPerformed === false));
   });
 
@@ -56,6 +58,25 @@ describe('synthetic replay', () => {
     assert.equal(first.receipt.status, 'drafted');
     assert.equal(second.policy.code, 'blocked.cooldown');
     assert.equal(second.draft, null);
+  });
+
+  test('holds drafts from human-review stations instead of delivering them', () => {
+    const care = { ...fixtureEvent(), content: 'I feel stuck and worried.' };
+    const held = new RelayEngine({ ...createSyntheticConfig(), mode: 'discord-send' }).route(care);
+    const released = new RelayEngine({ ...createSyntheticConfig(), humanReviewStations: [] }).route(care);
+
+    assert.equal(held.draft.stationId, 'care');
+    assert.equal(held.receipt.status, 'needs-human');
+    assert.equal(held.receipt.deliveryCode, 'held.human-review');
+    assert.equal(held.trace[3].status, 'held');
+    assert.equal(released.receipt.status, 'drafted');
+  });
+
+  test('breaks score ties by fixed station order and reports matched keywords', () => {
+    const [winner, runnerUp] = scoreStations({ content: 'Worried the build broke again.', mentioned: false });
+
+    assert.deepEqual([winner.stationId, winner.score, winner.matches], ['builder', 1, ['build']]);
+    assert.deepEqual([runnerUp.stationId, runnerUp.score, runnerUp.matches], ['care', 1, ['worried']]);
   });
 
   test('rejects malformed and oversized events before routing', () => {

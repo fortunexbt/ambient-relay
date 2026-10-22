@@ -50,7 +50,7 @@ Credential-shaped examples were removed. The environment example is comment-only
 - Cooldown state is in memory and resets on restart. Multiple processes would not share it and are unsupported.
 - Receipts are stdout records, not signed, durable, append-only, or tamper evident. Fingerprints of predictable messages are vulnerable to guessing.
 - There is no emergency stop control beyond terminating the local process or revoking the Discord token. Keep send mode attended.
-- The Care station is a keyword-routed acknowledgement, not a mental-health or crisis system. It has no risk assessment, escalation, or trained-human handoff.
+- The Care station is a keyword-routed acknowledgement, not a mental-health or crisis system. Its drafts are held with `held.human-review` and never delivered, even in send mode, but the relay has no risk assessment or escalation channel of its own. Holding a draft only means nothing was sent; a person still has to read the channel.
 - Discord library behavior and advisories change. Dependabot and CI audit the lock, but operators must review updates before live use.
 - CI actions are SHA-pinned, but npm registry packages and the Node runner remain supply-chain dependencies.
 - The high-signal secret scan cannot prove that every possible credential format is absent.

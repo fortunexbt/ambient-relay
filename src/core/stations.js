@@ -22,24 +22,30 @@ const STATIONS = Object.freeze([
   }),
 ]);
 
-export function selectStation(event) {
+export function scoreStations(event) {
   const lowered = event.content.toLowerCase();
-  const candidates = STATIONS.map((station, index) => {
-    const matches = station.keywords.filter((keyword) => lowered.includes(keyword)).length;
+  return STATIONS.map((station, index) => {
+    const matches = station.keywords.filter((keyword) => lowered.includes(keyword));
     const mentionBoost = station.id === 'guide' && event.mentioned ? 1 : 0;
-    return { station, score: matches + mentionBoost, index };
-  })
-    .filter((candidate) => candidate.score > 0)
-    .sort((left, right) => right.score - left.score || left.index - right.index);
+    return Object.freeze({
+      stationId: station.id,
+      score: matches.length + mentionBoost,
+      matches: Object.freeze(mentionBoost ? [...matches, '@mention'] : matches),
+      index,
+    });
+  }).sort((left, right) => right.score - left.score || left.index - right.index);
+}
 
-  if (candidates.length === 0) return null;
-  const winner = candidates[0];
+export function selectStation(event) {
+  const winner = scoreStations(event)[0];
+  if (winner.score === 0) return null;
+  const station = STATIONS[winner.index];
   return Object.freeze({
-    stationId: winner.station.id,
-    stationLabel: winner.station.label,
-    category: winner.station.categories[0],
+    stationId: station.id,
+    stationLabel: station.label,
+    category: station.categories[0],
     score: winner.score,
-    content: winner.station.response,
+    content: station.response,
   });
 }
 

@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Ambient Relay: which Discord message gets a reply, and why</title>
+    <meta name="description" content="A deterministic Discord bot router running in your browser on a synthetic message stream. Change a policy and watch every reply decision recompute. Nothing is sent." />
+    <meta name="theme-color" content="#f4f1ea" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Ambient Relay" />
+    <meta property="og:description" content="Which Discord message would get a bot reply, under which policy, and why. Runs offline in your browser. Nothing is sent." />
+    <meta property="og:image" content="https://ambient-relay.vercel.app/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:url" content="https://ambient-relay.vercel.app/" />
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+  <body>
+    <a class="skip" href="#lab">Skip to the lab</a>
+    <header class="masthead">
+      <p class="brand">
+        <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M6 22a10 10 0 0 1 0-12M26 10a10 10 0 0 1 0 12M11 19a5 5 0 0 1 0-6M21 13a5 5 0 0 1 0 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="16" cy="16" r="2.4" fill="currentColor"/></svg>
+        Ambient Relay
+      </p>
+      <h1>See which Discord message would get a bot reply, and why, before anything is sent.</h1>
+      <p class="lede">The same router the CLI runs is running in this page, on a 13-message synthetic stream. Change a policy and every decision is recomputed. There is no Discord connection here.</p>
+      <div class="try" role="group" aria-label="Guided scenarios">
+        <span class="try-label">Try one:</span>
+        <button type="button" class="chip" data-scenario="0" aria-pressed="false">Turn the cooldown off</button>
+        <button type="button" class="chip" data-scenario="1" aria-pressed="false">Allowlist #lab-random</button>
+        <button type="button" class="chip" data-scenario="2" aria-pressed="false">Let Care drafts through</button>
+        <button type="button" class="chip chip-reset" data-scenario="reset">Reset</button>
+      </div>
+    </header>
+
+    <main id="lab" class="lab">
+      <section class="timeline" aria-label="Replay scrubber">
+        <button class="play" type="button" aria-label="Play replay">
+          <svg class="icon-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 2.8v10.4L13 8z" fill="currentColor"/></svg>
+          <svg class="icon-pause" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5h2.8v11H4zM9.2 2.5H12v11H9.2z" fill="currentColor"/></svg>
+        </button>
+        <div class="track">
+          <ol class="ticks" aria-hidden="true"></ol>
+          <input class="scrub" type="range" min="1" step="1" aria-label="Event" />
+        </div>
+        <ul class="legend" aria-hidden="true">
+          <li class="tick-reply"><span>Would reply</span></li>
+          <li class="tick-human"><span>Needs human</span></li>
+          <li class="tick-suppressed"><span>Suppressed</span></li>
+        </ul>
+        <output class="position mono" aria-live="polite"></output>
+      </section>
+
+      <section class="channel" aria-label="Synthetic Discord stream">
+        <nav class="rail" aria-label="Channels">
+          <p class="guild">lab-guild</p>
+          <ul class="channels"></ul>
+          <p class="guild">Direct messages</p>
+          <ul class="dms"></ul>
+        </nav>
+        <div class="stream">
+          <header class="stream-head">
+            <span class="hash" aria-hidden="true">#</span>
+            <span>lab-guild, in arrival order</span>
+            <span class="stream-note mono">synthetic fixture</span>
+          </header>
+          <ol class="messages"></ol>
+        </div>
+      </section>
+
+      <section class="decision" aria-label="Decision for the selected event"></section>
+
+      <aside class="policies" aria-label="Policies">
+        <h2>Policy</h2>
+        <fieldset class="field">
+          <legend>Cooldown per channel</legend>
+          <div class="segmented" data-policy="cooldown"></div>
+          <p class="hint">After a draft, the relay stays quiet in that channel for this long.</p>
+        </fieldset>
+        <fieldset class="field">
+          <legend>Allowlisted channel</legend>
+          <div class="segmented" data-policy="channel"></div>
+          <p class="hint">The relay only reads one channel. Everything else is dropped.</p>
+        </fieldset>
+        <fieldset class="field">
+          <legend>Hold for a human</legend>
+          <div class="switches" data-policy="review"></div>
+          <p class="hint">Held drafts are written but never sent. Care is held by default.</p>
+        </fieldset>
+        <div class="field locked">
+          <h3>Fixed, not configurable</h3>
+          <ul>
+            <li>Bot authors never trigger a reply.</li>
+            <li>Direct messages are ignored.</li>
+            <li>Only lab-guild is allowlisted.</li>
+            <li>Live sending needs the CLI, a bot token and a typed acknowledgement.</li>
+          </ul>
+        </div>
+        <dl class="tally"></dl>
+      </aside>
+    </main>
+
+    <footer class="foot">
+      <p>
+        Every decision on this page comes from <code>src/core</code>, the code the CLI and the gated live adapter use. Receipts hold hashes, never message text.
+      </p>
+      <p><a href="https://github.com/fortunexbt/ambient-relay">Source on GitHub</a> · MIT</p>
+    </footer>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

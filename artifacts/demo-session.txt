@@ -3,45 +3,124 @@
 │ MODE synthetic  ·  NETWORK none  ·  OUTBOUND disabled                    │
 ╰──────────────────────────────────────────────────────────────────────────╯
 
-┌─ EVENT evt-build-01
+┌─ EVENT evt-01-deploy
 │ policy   allowed.route-evaluation
 │ route    station.builder
 │ draft    I would isolate the failing boundary, reproduce it with the
 │          smallest fixture, then add a regression check before changing
 │          behavior.
-│ receipt  relay_ebf228cda1e1abb9  /  drafted
-│ event    d902966f5b3f…882f6a4e
+│ receipt  relay_613d0d4c02446db4  /  drafted
+│ event    5bda28d3881c…4dc00458
 │ outbound NOT SENT  /  dry-run.synthetic-default
 └───────────────────────────────────────────────────────────────────────────
 
-┌─ EVENT evt-bot-02
+┌─ EVENT evt-02-status-bot
 │ policy   blocked.bot-author
 │ route    no draft
-│ receipt  relay_492647e9c649da0d  /  blocked
-│ event    6fb65da0960f…83899d03
+│ receipt  relay_c6029cc12bfba75d  /  blocked
+│ event    b1c37467ce79…9b8acd51
 │ outbound NOT SENT  /  delivery.not-requested
 └───────────────────────────────────────────────────────────────────────────
 
-┌─ EVENT evt-care-03
+┌─ EVENT evt-03-same-error
+│ policy   blocked.cooldown
+│ route    no draft
+│ receipt  relay_7b5075d2624968a8  /  blocked
+│ event    de79dc4b4b34…e4f62834
+│ outbound NOT SENT  /  delivery.not-requested
+└───────────────────────────────────────────────────────────────────────────
+
+┌─ EVENT evt-04-overwhelmed
 │ policy   allowed.route-evaluation
 │ route    station.care
 │ draft    That sounds heavy. Name the smallest part you want witnessed
 │          or untangled, and we can stay with that.
-│ receipt  relay_c2b66692c7e6aced  /  drafted
-│ event    b6086169e1cb…112efc96
-│ outbound NOT SENT  /  dry-run.synthetic-default
+│ receipt  relay_51712424e569d065  /  needs-human
+│ event    2a8a8949667b…98931d53
+│ outbound NOT SENT  /  held.human-review
 └───────────────────────────────────────────────────────────────────────────
 
-┌─ EVENT evt-quiet-04
+┌─ EVENT evt-05-morning
 │ policy   allowed.route-evaluation
 │ route    no draft
-│ receipt  relay_8fdd61f4da7e24f6  /  observed
-│ event    427a8e90f0ec…cd302e97
+│ receipt  relay_b463e5ffae1754e9  /  observed
+│ event    7474332eb75c…a177d60d
 │ outbound NOT SENT  /  delivery.not-requested
 └───────────────────────────────────────────────────────────────────────────
 
+┌─ EVENT evt-06-dm
+│ policy   blocked.direct-message
+│ route    no draft
+│ receipt  relay_a4d50e49557713b6  /  blocked
+│ event    19b8f9a2b3de…deac0f9a
+│ outbound NOT SENT  /  delivery.not-requested
+└───────────────────────────────────────────────────────────────────────────
+
+┌─ EVENT evt-07-slides
+│ policy   blocked.channel-not-allowlisted
+│ route    no draft
+│ receipt  relay_de4a0537a2b546c4  /  blocked
+│ event    0fd628d1c8f3…471e50da
+│ outbound NOT SENT  /  delivery.not-requested
+└───────────────────────────────────────────────────────────────────────────
+
+┌─ EVENT evt-08-mention
+│ policy   allowed.route-evaluation
+│ route    station.guide
+│ draft    Start by defining the outcome and constraint; then choose one
+│          reversible next step and a signal that tells you it worked.
+│ receipt  relay_e8a0c9dbb76ea8da  /  drafted
+│ event    ace6824d0bb7…e877c7e6
+│ outbound NOT SENT  /  dry-run.synthetic-default
+└───────────────────────────────────────────────────────────────────────────
+
+┌─ EVENT evt-09-pushing
+│ policy   blocked.cooldown
+│ route    no draft
+│ receipt  relay_bff19f4cc2f181d0  /  blocked
+│ event    31593067ff34…e10f8f62
+│ outbound NOT SENT  /  delivery.not-requested
+└───────────────────────────────────────────────────────────────────────────
+
+┌─ EVENT evt-10-tie
+│ policy   allowed.route-evaluation
+│ route    station.builder
+│ draft    I would isolate the failing boundary, reproduce it with the
+│          smallest fixture, then add a regression check before changing
+│          behavior.
+│ receipt  relay_d1db2ea331f42f07  /  drafted
+│ event    c1d4911f6f15…cb537bfc
+│ outbound NOT SENT  /  dry-run.synthetic-default
+└───────────────────────────────────────────────────────────────────────────
+
+┌─ EVENT evt-11-deploy-bot
+│ policy   blocked.bot-author
+│ route    no draft
+│ receipt  relay_d51773d46dcc1125  /  blocked
+│ event    7dbd23361414…2a0f6412
+│ outbound NOT SENT  /  delivery.not-requested
+└───────────────────────────────────────────────────────────────────────────
+
+┌─ EVENT evt-12-lol
+│ policy   allowed.route-evaluation
+│ route    no draft
+│ receipt  relay_8feb024f68cfe571  /  observed
+│ event    8c6f5279b128…1db9ac00
+│ outbound NOT SENT  /  delivery.not-requested
+└───────────────────────────────────────────────────────────────────────────
+
+┌─ EVENT evt-13-exhausted
+│ policy   allowed.route-evaluation
+│ route    station.care
+│ draft    That sounds heavy. Name the smallest part you want witnessed
+│          or untangled, and we can stay with that.
+│ receipt  relay_26e34f187c271114  /  needs-human
+│ event    9e0149f3cd1e…283e0cf9
+│ outbound NOT SENT  /  held.human-review
+└───────────────────────────────────────────────────────────────────────────
+
 REPLAY RECEIPT
-fixture relay-room-2026-07@1.0.0
-events 4  ·  drafted 2  ·  blocked 1  ·  observed 1
+fixture relay-room-2026-07@2.0.0
+events 13  ·  drafted 3  ·  needs-human 2  ·  blocked 6  ·  observed 2
 network 0  ·  outbound 0
 proof: synthetic fixture only; no Discord session or AI provider was contacted.

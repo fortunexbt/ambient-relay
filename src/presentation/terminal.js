@@ -27,12 +27,10 @@ export function renderTerminalProof(session, options = {}) {
     lines.push('');
   }
 
-  const drafted = session.outcomes.filter((item) => item.draft).length;
-  const blocked = session.outcomes.filter((item) => item.receipt.status === 'blocked').length;
-  const observed = session.outcomes.filter((item) => item.receipt.status === 'observed').length;
+  const count = (status) => session.outcomes.filter((item) => item.receipt.status === status).length;
   lines.push('REPLAY RECEIPT');
   lines.push(`fixture ${session.fixtureId}@${session.fixtureVersion}`);
-  lines.push(`events ${session.outcomes.length}  ·  drafted ${drafted}  ·  blocked ${blocked}  ·  observed ${observed}`);
+  lines.push(`events ${session.outcomes.length}  ·  drafted ${count('drafted')}  ·  needs-human ${count('needs-human')}  ·  blocked ${count('blocked')}  ·  observed ${count('observed')}`);
   lines.push(`network ${session.networkRequests}  ·  outbound ${session.outboundMessages}`);
   lines.push('proof: synthetic fixture only; no Discord session or AI provider was contacted.');
   return lines.join('\n') + '\n';

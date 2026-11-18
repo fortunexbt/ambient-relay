@@ -1,8 +1,9 @@
-import '@fontsource/ibm-plex-sans/latin-400.css';
-import '@fontsource/ibm-plex-sans/latin-500.css';
-import '@fontsource/ibm-plex-sans/latin-600.css';
-import '@fontsource/ibm-plex-mono/latin-400.css';
-import '@fontsource/ibm-plex-mono/latin-500.css';
+import '@fontsource/barlow/latin-400.css';
+import '@fontsource/barlow/latin-500.css';
+import '@fontsource/barlow/latin-600.css';
+import '@fontsource/barlow-condensed/latin-500.css';
+import '@fontsource/barlow-condensed/latin-600.css';
+import '@fontsource/martian-mono/latin-400.css';
 import './styles.css';
 
 import { createSyntheticConfig } from '../../src/config.js';
@@ -46,10 +47,17 @@ const SCENARIOS: { policy: Partial<Policy>; eventId: string }[] = [
   { policy: { allowedChannelId: 'lab-random' }, eventId: 'evt-07-slides' },
   { policy: { humanReviewStations: [] }, eventId: 'evt-04-overwhelmed' },
 ];
+// Board column order, left to right.
+const VERDICTS: Verdict[] = ['reply', 'human', 'suppressed'];
 const VERDICT_LABEL: Record<Verdict, string> = {
-  reply: 'Would reply',
-  human: 'Needs human',
-  suppressed: 'Suppressed',
+  reply: 'Drafted',
+  human: 'Held for a human',
+  suppressed: 'No reply',
+};
+const OUTLET_LABEL: Record<Verdict, string> = {
+  reply: 'Drafted',
+  human: 'Held',
+  suppressed: 'No reply',
 };
 const BLOCK_LABEL: Record<string, string> = {
   'blocked.bot-author': 'bot author',
@@ -67,7 +75,6 @@ const CHECK_LABEL: Record<string, string> = {
   'mode.explicit': 'Mode is explicit',
   'cooldown.open': 'Channel cooldown has passed',
 };
-const AVATAR_HUES = [24, 152, 205, 268, 330, 88];
 const STEP_MS = 1100;
 
 interface RelayConfig {
@@ -89,12 +96,10 @@ const state = {
 };
 
 const $ = <T extends Element>(selector: string) => document.querySelector(selector) as T;
-const scrub = $<HTMLInputElement>('.scrub');
 const play = $<HTMLButtonElement>('.play');
-const messages = $<HTMLOListElement>('.messages');
+const events = $<HTMLOListElement>('.events');
 const decision = $<HTMLElement>('.decision');
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-const narrow = matchMedia('(max-width: 820px)');
 
 function clonePolicy(policy: Policy): Policy {
   return { ...policy, humanReviewStations: [...policy.humanReviewStations] };
@@ -154,14 +159,14 @@ function quoteList(words: readonly string[]) {
   return words.map((w) => `“${w}”`).join(', ');
 }
 
-function hue(id: string) {
-  let sum = 0;
-  for (const char of id) sum += char.charCodeAt(0);
-  return AVATAR_HUES[sum % AVATAR_HUES.length];
-}
-
 function escape(text: string) {
   return text.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+}
+
+function messageHtml(event: RawEvent) {
+  return event.mentioned
+    ? `<span class="mention">@relay</span> ${escape(event.content.replace(/^@relay\s*/, ''))}`
+    : escape(event.content);
 }
 
 function reasonFor(outcome: Outcome, event: RawEvent) {
@@ -181,76 +186,62 @@ function reasonFor(outcome: Outcome, event: RawEvent) {
   const label = stationLabel(winner.stationId);
   let text = `${label} matched ${quoteList(winner.matches)} (score ${winner.score}).`;
   if (runnerUp.score === winner.score) {
-    text += ` Tied with ${stationLabel(runnerUp.stationId)}; ties go to the fixed order Builder, Care, Guide.`;
+    text += ` Tied with ${stationLabel(runnerUp.stationId)}, and ties go to the fixed order Builder, Care, Guide.`;
   }
   if (outcome.receipt.status === 'needs-human') text += ` ${label} drafts are held for a person to read. Nothing is sent.`;
   return text;
 }
 
-function verdictBlock(outcome: Outcome) {
-  const verdict = verdictOf(outcome);
-  if (verdict === 'suppressed') {
-    return `<p class="quiet"><span class="dot" aria-hidden="true"></span>Relay stays quiet · ${escape(shortReason(outcome))}</p>`;
-  }
-  const tag = verdict === 'reply' ? 'Draft · not sent' : 'Held for a human';
-  return `<div class="ghost ghost-${verdict}">
-    <span class="avatar relay-avatar" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M6 22a10 10 0 0 1 0-12M26 10a10 10 0 0 1 0 12M11 19a5 5 0 0 1 0-6M21 13a5 5 0 0 1 0 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><circle cx="16" cy="16" r="2.6" fill="currentColor"/></svg></span>
-    <div class="body">
-      <p class="meta"><span class="name">relay</span><span class="tag tag-${verdict}">${tag}</span><span class="station">${escape(outcome.draft!.stationLabel)}</span></p>
-      <p class="text">${escape(outcome.draft!.content)}</p>
-    </div>
-  </div>`;
+function buildEvents() {
+  events.innerHTML = EVENTS.map((event, i) => `<li class="ev" data-index="${i}" style="--i:${i}">
+      <button class="ev-hit" type="button" data-index="${i}">
+        <time class="ev-time" datetime="${event.timestamp}">${time(event)}</time>
+        <span class="ev-who">${escape(author(event))}${event.author.bot ? '<span class="tag-bot">bot</span>' : ''}</span>
+        <span class="ev-where${event.directMessage ? ' dm' : ''}">${escape(event.directMessage ? 'DM' : `#${event.channelId}`)}</span>
+        <span class="ev-text">${messageHtml(event)}</span>
+        <span class="track" aria-hidden="true">
+          <span class="rail"></span>
+          ${VERDICTS.map((v) => `<span class="socket socket-${v}"></span>`).join('')}
+          <span class="ghost"></span>
+          <span class="lamp"></span>
+        </span>
+      </button>
+    </li>`).join('');
 }
 
-function buildMessages() {
-  messages.innerHTML = EVENTS.map((event, i) => {
-    const offChannel = event.directMessage || event.channelId !== 'lab-build';
-    return `<li class="msg" data-index="${i}">
-      <div class="post">
-        <span class="avatar" style="--h:${hue(event.author.id)}" aria-hidden="true">${escape(author(event)[0].toUpperCase())}</span>
-        <div class="body">
-          <p class="meta">
-            <button class="hit" type="button" data-index="${i}"><span class="name">${escape(author(event))}</span></button>
-            ${event.author.bot ? '<span class="tag tag-bot">Bot</span>' : ''}
-            <time class="mono" datetime="${event.timestamp}">${time(event)}</time>
-            ${offChannel ? `<span class="where">${escape(channelLabel(event))}</span>` : ''}
-          </p>
-          <p class="text">${event.mentioned
-            ? `<span class="mention">@relay</span> ${escape(event.content.replace(/^@relay\s*/, ''))}`
-            : escape(event.content)}</p>
-        </div>
-      </div>
-      <div class="verdict"></div>
-    </li>`;
-  }).join('');
-}
-
-function renderMessages() {
-  messages.querySelectorAll<HTMLLIElement>('.msg').forEach((item, i) => {
-    item.hidden = i > state.index;
+function renderEvents() {
+  const pendingFrom = state.playing ? state.index + 1 : EVENTS.length;
+  events.querySelectorAll<HTMLLIElement>('.ev').forEach((item, i) => {
+    const verdict = verdictOf(state.outcomes[i]);
+    const was = verdictOf(baseline[i]);
+    item.style.setProperty('--col', String(VERDICTS.indexOf(verdict)));
+    item.style.setProperty('--was', String(VERDICTS.indexOf(was)));
+    item.dataset.verdict = verdict;
     item.classList.toggle('current', i === state.index);
     item.classList.toggle('changed', changed(i));
-    const button = item.querySelector('.hit')!;
+    item.classList.toggle('moved', verdict !== was);
+    item.classList.toggle('pending', i >= pendingFrom);
+    const button = item.querySelector('.ev-hit')!;
     button.setAttribute('aria-current', i === state.index ? 'true' : 'false');
-    button.setAttribute('aria-label', `${author(EVENTS[i])} at ${time(EVENTS[i])}: ${VERDICT_LABEL[verdictOf(state.outcomes[i])]}`);
-    const slot = item.querySelector<HTMLElement>('.verdict')!;
-    const key = signature(state.outcomes[i]);
-    if (slot.dataset.key !== key) {
-      slot.dataset.key = key;
-      slot.innerHTML = verdictBlock(state.outcomes[i]);
-    }
+    button.setAttribute('aria-label', `${author(EVENTS[i])} at ${time(EVENTS[i])} in ${channelLabel(EVENTS[i])}: ${VERDICT_LABEL[verdict]}${changed(i) ? ', changed from the default policy' : ''}`);
+    item.querySelector<HTMLElement>('.ev-where')!.classList.toggle('open', EVENTS[i].channelId === state.policy.allowedChannelId);
   });
 }
 
-function scrollToCurrent(instant = reducedMotion.matches) {
-  const stream = messages.parentElement!;
-  const current = messages.querySelector<HTMLElement>('.msg.current');
-  if (!current) return;
-  const view = stream.getBoundingClientRect();
-  const item = current.getBoundingClientRect();
-  const top = view.top + $<HTMLElement>('.stream-head').offsetHeight;
-  const delta = item.bottom > view.bottom ? Math.min(item.bottom - view.bottom + 16, item.top - top) : item.top < top ? item.top - top : 0;
-  if (delta) stream.scrollBy({ top: delta, behavior: instant ? 'auto' : 'smooth' });
+function renderHead() {
+  const event = EVENTS[state.index];
+  const verdict = verdictOf(state.outcomes[state.index]);
+  $<HTMLOutputElement>('.position').innerHTML = `Event ${state.index + 1} of ${EVENTS.length}<span class="sr">, ${time(event)}, ${VERDICT_LABEL[verdict]}</span>`;
+
+  const counts = { reply: 0, human: 0, suppressed: 0 };
+  const defaults = { reply: 0, human: 0, suppressed: 0 };
+  state.outcomes.forEach((o) => counts[verdictOf(o)]++);
+  baseline.forEach((o) => defaults[verdictOf(o)]++);
+  $<HTMLOListElement>('.outlets').innerHTML = VERDICTS.map((v) => {
+    const delta = counts[v] - defaults[v];
+    const note = delta ? `<span class="delta">${delta > 0 ? '+' : '−'}${Math.abs(delta)}<span class="sr"> against the default policy</span></span>` : '';
+    return `<li class="outlet outlet-${v}"><span class="outlet-name">${OUTLET_LABEL[v]}</span> <span class="outlet-count">${counts[v]}${note}</span></li>`;
+  }).join('');
 }
 
 function renderDecision() {
@@ -262,29 +253,31 @@ function renderDecision() {
   const scores = outcome.policy.allowed ? scoreStations(normalizeEvent(event)) : [];
   const before = baseline[i];
 
+  decision.dataset.verdict = verdict;
   decision.innerHTML = `
     <h2 class="sr">Decision</h2>
     <header class="d-head">
-      <p class="d-event mono">${escape(event.eventId)} · ${time(event)} · ${escape(channelLabel(event))}</p>
-      <p class="stamp stamp-${verdict}">${VERDICT_LABEL[verdict]}</p>
-      ${changed(i) ? `<p class="was">Default policy: ${VERDICT_LABEL[verdictOf(before)]} · ${escape(shortReason(before))}</p>` : ''}
+      <p class="d-event"><span class="d-id">${escape(event.eventId)}</span><span>${time(event)}</span><span>${escape(channelLabel(event))}</span></p>
+      <blockquote class="d-quote"><span class="d-author">${escape(author(event))}${event.author.bot ? ' <span class="tag-bot">bot</span>' : ''}</span> ${messageHtml(event)}</blockquote>
+      <p class="signal"><span class="signal-lamp" aria-hidden="true"></span><span class="signal-word">${VERDICT_LABEL[verdict]}</span></p>
+      ${changed(i) ? `<p class="was">The default policy gave ${VERDICT_LABEL[verdictOf(before)].toLowerCase()}, ${escape(shortReason(before))}.</p>` : ''}
+      <p class="reason">${escape(reasonFor(outcome, event))}</p>
     </header>
-    <p class="reason">${escape(reasonFor(outcome, event))}</p>
     <ol class="steps">
       <li class="step"><h3>Policy gate</h3>
         <ul class="checks">${outcome.policy.checks.map((c) => `<li class="${c.passed ? 'pass' : 'fail'}${c.code === firstFail ? ' first' : ''}">
-          <span class="mark-${c.passed ? 'pass' : 'fail'}" aria-hidden="true"></span>
+          <span class="tick" aria-hidden="true"></span>
           <span>${CHECK_LABEL[c.code] ?? c.code}</span><span class="sr">${c.passed ? 'passed' : 'failed'}</span></li>`).join('')}
         </ul>
       </li>
       <li class="step"><h3>Station router</h3>
         ${scores.length ? `<table class="scores"><thead><tr><th scope="col">Station</th><th scope="col">Score</th><th scope="col">Matched</th></tr></thead><tbody>
-          ${scores.map((s, n) => `<tr class="${n === 0 && s.score > 0 ? 'win' : ''}"><th scope="row">${stationLabel(s.stationId)}</th><td class="mono">${s.score}</td><td>${s.matches.length ? escape(s.matches.join(' ')) : '–'}</td></tr>`).join('')}
+          ${scores.map((s, n) => `<tr class="${n === 0 && s.score > 0 ? 'win' : ''}"><th scope="row">${stationLabel(s.stationId)}</th><td class="num">${s.score}</td><td>${s.matches.length ? escape(s.matches.join(' ')) : '–'}</td></tr>`).join('')}
         </tbody></table>` : '<p class="skip-note">Not reached. The gate stopped this event first.</p>'}
       </li>
-      ${outcome.draft ? `<li class="step"><h3>Draft</h3><p class="draft">${escape(outcome.draft.content)}</p></li>` : ''}
+      ${outcome.draft ? `<li class="step"><h3>Draft from ${escape(outcome.draft.stationLabel)}, ${verdict === 'reply' ? 'not sent' : 'held for a human'}</h3><p class="draft">${escape(outcome.draft.content)}</p></li>` : ''}
       <li class="step"><h3>Receipt</h3>
-        <dl class="receipt mono">
+        <dl class="receipt">
           <dt>id</dt><dd>${outcome.receipt.receiptId}</dd>
           <dt>status</dt><dd>${outcome.receipt.status}</dd>
           <dt>policy</dt><dd>${outcome.policy.code}</dd>
@@ -294,32 +287,6 @@ function renderDecision() {
         </dl>
       </li>
     </ol>`;
-}
-
-function buildTimeline() {
-  scrub.max = String(EVENTS.length);
-  $<HTMLOListElement>('.ticks').innerHTML = EVENTS.map(() => '<li></li>').join('');
-}
-
-function renderTimeline() {
-  scrub.value = String(state.index + 1);
-  const event = EVENTS[state.index];
-  scrub.setAttribute('aria-valuetext', `Event ${state.index + 1} of ${EVENTS.length}, ${time(event)}, ${VERDICT_LABEL[verdictOf(state.outcomes[state.index])]}`);
-  $<HTMLOutputElement>('.position').innerHTML = `${state.index + 1}/${EVENTS.length} · ${time(event)}<span class="sr">, ${VERDICT_LABEL[verdictOf(state.outcomes[state.index])]}</span>`;
-  $<HTMLOListElement>('.ticks').querySelectorAll('li').forEach((tick, i) => {
-    tick.className = `tick-${verdictOf(state.outcomes[i])}${changed(i) ? ' changed' : ''}${i <= state.index ? ' seen' : ''}${i === state.index ? ' at' : ''}`;
-  });
-}
-
-function buildRail() {
-  $<HTMLUListElement>('.channels').innerHTML = GUILD_CHANNELS.map((id) => `<li data-channel="${id}"><span class="hash" aria-hidden="true">#</span>${id}<span class="allow">allowlisted</span></li>`).join('');
-  $<HTMLUListElement>('.dms').innerHTML = EVENTS.filter((e) => e.directMessage).map((e) => `<li>${escape(author(e))}</li>`).join('');
-}
-
-function renderRail() {
-  document.querySelectorAll<HTMLLIElement>('.channels li').forEach((li) => {
-    li.classList.toggle('allowed', li.dataset.channel === state.policy.allowedChannelId);
-  });
 }
 
 function segmented(container: HTMLElement, name: string, options: { label: string; value: string }[], onPick: (value: string) => void) {
@@ -347,8 +314,7 @@ function buildPolicies() {
     update();
   });
 
-  const tryGroup = $<HTMLElement>('.try');
-  tryGroup.addEventListener('click', (e) => {
+  $<HTMLElement>('.try').addEventListener('click', (e) => {
     const button = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-scenario]');
     if (!button) return;
     stop();
@@ -362,9 +328,8 @@ function buildPolicies() {
       state.index = EVENTS.findIndex((ev) => ev.eventId === scenario.eventId);
     }
     update();
-    scrollToCurrent();
-    if ($('.channel').getBoundingClientRect().bottom > innerHeight) {
-      $(narrow.matches ? '.channel' : '.timeline').scrollIntoView({ block: 'start', behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+    if ($('.board').getBoundingClientRect().top < 0) {
+      $('.board').scrollIntoView({ block: 'start', behavior: reducedMotion.matches ? 'auto' : 'smooth' });
     }
   });
 }
@@ -375,38 +340,27 @@ function renderPolicies() {
     const pressed = JSON.stringify({ ...DEFAULT_POLICY, ...scenario.policy }) === current;
     $(`[data-scenario="${n}"]`).setAttribute('aria-pressed', String(pressed));
   });
-
   document.querySelectorAll<HTMLInputElement>('input[name="cooldown"]').forEach((i) => { i.checked = Number(i.value) === state.policy.cooldownMs; });
   document.querySelectorAll<HTMLInputElement>('input[name="channel"]').forEach((i) => { i.checked = i.value === state.policy.allowedChannelId; });
   document.querySelectorAll<HTMLInputElement>('[data-policy="review"] input').forEach((i) => { i.checked = state.policy.humanReviewStations.includes(i.value); });
-
-  const counts = { reply: 0, human: 0, suppressed: 0 };
-  const defaults = { reply: 0, human: 0, suppressed: 0 };
-  state.outcomes.forEach((o) => counts[verdictOf(o)]++);
-  baseline.forEach((o) => defaults[verdictOf(o)]++);
-  const diff = (v: Verdict) => {
-    const delta = counts[v] - defaults[v];
-    return delta ? `<span class="delta">${delta > 0 ? '+' : '−'}${Math.abs(delta)}</span>` : '';
-  };
-  $<HTMLElement>('.tally').innerHTML = (['reply', 'human', 'suppressed'] as Verdict[])
-    .map((v) => `<div class="tally-${v}"><dt>${VERDICT_LABEL[v]}</dt><dd><span class="mono">${counts[v]}</span>${diff(v)}</dd></div>`).join('');
 }
 
 function update() {
   recompute();
-  renderMessages();
-  renderTimeline();
+  renderEvents();
+  renderHead();
   renderDecision();
-  renderRail();
   renderPolicies();
 }
 
-function select(index: number) {
+function select(index: number, focus = false) {
   state.index = Math.min(EVENTS.length - 1, Math.max(0, index));
-  renderMessages();
-  renderTimeline();
+  renderEvents();
+  renderHead();
   renderDecision();
-  scrollToCurrent();
+  const button = events.querySelectorAll<HTMLButtonElement>('.ev-hit')[state.index];
+  if (focus) button.focus();
+  else if (state.playing) button.scrollIntoView({ block: 'nearest', behavior: reducedMotion.matches ? 'auto' : 'smooth' });
 }
 
 function stop() {
@@ -414,35 +368,36 @@ function stop() {
   state.playing = 0;
   play.classList.remove('playing');
   play.setAttribute('aria-label', 'Play replay');
+  renderEvents();
 }
 
 function start() {
-  if (state.index >= EVENTS.length - 1) select(0);
   play.classList.add('playing');
   play.setAttribute('aria-label', 'Pause replay');
   state.playing = window.setInterval(() => {
     if (state.index >= EVENTS.length - 1) return stop();
     select(state.index + 1);
   }, STEP_MS);
+  select(state.index >= EVENTS.length - 1 ? 0 : state.index);
 }
 
-buildTimeline();
-buildMessages();
-buildRail();
+buildEvents();
 buildPolicies();
 update();
-scrollToCurrent(true);
-// Entrance transitions are for scrubbing, not for the first paint.
+// Lamp transitions are for policy changes, not for the first paint.
 requestAnimationFrame(() => requestAnimationFrame(() => document.documentElement.classList.add('ready')));
 
-scrub.addEventListener('input', () => {
-  stop();
-  select(Number(scrub.value) - 1);
-});
 play.addEventListener('click', () => (state.playing ? stop() : start()));
-messages.addEventListener('click', (e) => {
-  const item = (e.target as HTMLElement).closest<HTMLElement>('.msg');
+events.addEventListener('click', (e) => {
+  const item = (e.target as HTMLElement).closest<HTMLElement>('.ev');
   if (!item) return;
   stop();
   select(Number(item.dataset.index));
+});
+events.addEventListener('keydown', (e) => {
+  const step = { ArrowDown: 1, ArrowUp: -1, Home: -EVENTS.length, End: EVENTS.length }[e.key];
+  if (!step) return;
+  e.preventDefault();
+  stop();
+  select(state.index + step, true);
 });

@@ -2,7 +2,7 @@
 
 **Live demo: [ambient-relay.vercel.app](https://ambient-relay.vercel.app)**
 
-[![The browser lab: a synthetic Discord stream on the left, the policy decision for the selected message on the right](docs/screenshot.webp)](https://ambient-relay.vercel.app)
+[![The browser lab with the cooldown turned off. Each of the 13 synthetic messages runs along a track to a green drafted, amber held or red no-reply lamp, dashed rings mark where the default policy would have routed it, and the selected message's decision, gate checks and receipt sit on the right](docs/screenshot.webp)](https://ambient-relay.vercel.app)
 
 Ambient Relay is a local Discord automation lab for proving the dangerous part first: **which event would trigger which reply, under which policy, without sending anything**.
 
@@ -10,7 +10,7 @@ It replays a versioned synthetic Discord event stream through a deterministic ro
 
 There are two ways to run it:
 
-- **Browser lab** (the demo above). The real router from `src/core` is bundled into a static page. Scrub through the 13 events, change the cooldown, the allowlisted channel or which stations need human review, and every decision is recomputed in place. Changed decisions are flagged against the default policy.
+- **Browser lab** (the demo above). The real router from `src/core` is bundled into a static page. Scrub through the 13 events, change the cooldown, the allowlisted channel or which stations need human review, and every decision is recomputed in place. Each event is drawn as a track ending in a drafted, held or no-reply signal, and a dashed ring marks where the default policy would have sent any event that changed.
 - **CLI.** `npm start` prints the same replay as a terminal proof. It needs no install, token, account, network connection, AI provider or `.env` file.
 
 ```text
